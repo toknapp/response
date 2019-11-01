@@ -6,6 +6,7 @@ from .user_external import ExternalUser
 
 __all__ = (
     "Action",
+    "Event",
     "Incident",
     "TimelineEvent",
     "ExternalUser",

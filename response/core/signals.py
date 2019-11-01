@@ -6,9 +6,14 @@ from response.core.serializers import ActionSerializer
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+import logging
+logger = logging.getLogger(__name__)
 
 @receiver(pre_save, sender=Action)
 def emit_action_event(sender, instance: Action, **kwargs):
+
+    logger.info("emitting event for action {}".format(instance))
+
     try:
         prev_state = Action.objects.get(pk=instance.pk)
     except Action.DoesNotExist:
@@ -16,7 +21,7 @@ def emit_action_event(sender, instance: Action, **kwargs):
         event_payload = ActionSerializer(instance).data
         event = Event()
         event.event_type = event_type
-        event.payload = event_payload
+        event.set_payload(event_payload)
         event.timestamp = datetime.now(tz=None)
         event.save()
         return
@@ -39,6 +44,6 @@ def emit_action_event(sender, instance: Action, **kwargs):
     # write the event to the table
     event = Event()
     event.event_type = event_type
-    event.payload = event_payload
+    event.set_payload(event_payload)
     event.timestamp = datetime.now(tz=None)
     event.save()
