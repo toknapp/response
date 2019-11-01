@@ -17,7 +17,7 @@ EVENT_TYPE_ACTION_COMPLETED = "action_completed"
 class Event(models.Model):
 
     timestamp = models.DateTimeField()
-    event_type = models.CharField()
+    event_type = models.CharField(max_length=50)
     payload = JSONField()
 
     def set_payload(self, payload_obj):
