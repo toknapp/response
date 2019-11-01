@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from response.core.models import Action, Event
+from response.core.models import Action, LogEvent
 from response.core.serializers import ActionSerializer
 
 from django.db.models.signals import pre_save
@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-#@receiver(pre_save, sender=Action)
+@receiver(pre_save, sender=Action)
 def emit_action_event(sender, instance: Action, **kwargs):
 
     logger.info(f"emitting event for action {instance}")
@@ -20,7 +20,7 @@ def emit_action_event(sender, instance: Action, **kwargs):
     except Action.DoesNotExist:
         event_type = "action_created"
         event_payload = ActionSerializer(instance).data
-        event = Event()
+        event = LogEvent()
         event.event_type = event_type
         event.set_payload(event_payload)
         event.timestamp = datetime.now(tz=None)
@@ -42,11 +42,8 @@ def emit_action_event(sender, instance: Action, **kwargs):
         # don't emit anything if action is unchanged
 
         # write the event to the table
-        event = Event()
+        event = LogEvent()
         event.event_type = event_type
         event.set_payload(event_payload)
         event.timestamp = datetime.now(tz=None)
         event.save()
-
-
-pre_save.connect(emit_action_event, sender=Action)

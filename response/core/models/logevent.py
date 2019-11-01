@@ -14,7 +14,7 @@ EVENT_TYPE_ACTION_UPDATED = "action_updated"
 EVENT_TYPE_ACTION_COMPLETED = "action_completed"
 
 
-class Event(models.Model):
+class LogEvent(models.Model):
 
     timestamp = models.DateTimeField()
     event_type = models.CharField(max_length=50)
