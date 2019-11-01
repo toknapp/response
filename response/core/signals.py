@@ -9,10 +9,11 @@ from django.dispatch import receiver
 import logging
 logger = logging.getLogger(__name__)
 
-@receiver(pre_save, sender=Action)
+
+#@receiver(pre_save, sender=Action)
 def emit_action_event(sender, instance: Action, **kwargs):
 
-    logger.info("emitting event for action {}".format(instance))
+    logger.info(f"emitting event for action {instance}")
 
     try:
         prev_state = Action.objects.get(pk=instance.pk)
@@ -24,26 +25,28 @@ def emit_action_event(sender, instance: Action, **kwargs):
         event.set_payload(event_payload)
         event.timestamp = datetime.now(tz=None)
         event.save()
-        return
+    else:
+        # Action exists, so it's being updated
+        event_type = None
+        event_payload = {}
+        if instance.details != prev_state.details:
+            event_payload["details"] = instance.details
+            event_type = "action_updated"
+        if instance.user != prev_state.user:
+            event_payload["user"] = instance.user.serialize()
+            event_type = "action_updated"
+        if instance.done and not prev_state.done:
+            event_payload["done"] = True
+            event_type = "action_completed"
 
-    # Action exists, so it's being updated
-    event_type = None
-    event_payload = {}
-    if instance.details != prev_state.details:
-        event_payload["details"] = instance.details
-        event_type = "action_updated"
-    if instance.user != prev_state.user:
-        event_payload["user"] = instance.user.serialize()
-        event_type = "action_updated"
-    if instance.done and not prev_state.done:
-        event_payload["done"] = True
-        event_type = "action_completed"
+        # don't emit anything if action is unchanged
 
-    # don't emit anything if action is unchanged
+        # write the event to the table
+        event = Event()
+        event.event_type = event_type
+        event.set_payload(event_payload)
+        event.timestamp = datetime.now(tz=None)
+        event.save()
 
-    # write the event to the table
-    event = Event()
-    event.event_type = event_type
-    event.set_payload(event_payload)
-    event.timestamp = datetime.now(tz=None)
-    event.save()
+
+pre_save.connect(emit_action_event, sender=Action)
