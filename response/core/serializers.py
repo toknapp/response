@@ -126,3 +126,11 @@ class IncidentSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+class EventSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Action
+        fields = ("id", "timestamp", "event_type", "payload")
+        read_only_fields = ("id", "timestamp", "event_type", "payload")
