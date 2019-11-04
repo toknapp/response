@@ -101,6 +101,7 @@ class IncidentSerializer(serializers.ModelSerializer):
             "report",
             "report_time",
             "report_only",
+            "private",
             "reporter",
             "severity",
             "start_time",
@@ -120,6 +121,7 @@ class IncidentSerializer(serializers.ModelSerializer):
             )
 
         instance.report = validated_data.get("report", instance.report)
+        instance.private = validated_data.get("private", instance.private)
         instance.start_time = validated_data.get("start_time", instance.start_time)
         instance.summary = validated_data.get("summary", instance.summary)
         instance.severity = validated_data.get("severity", instance.severity)

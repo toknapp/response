@@ -28,6 +28,7 @@ def report_incident(
     else:
         report_only = False
 
+    private = True if submission["private"] == "yes" else False
     name = get_user_profile(user_id)["name"]
     reporter, _ = ExternalUser.objects.get_or_create_slack(
         external_id=user_id, display_name=name
@@ -45,6 +46,7 @@ def report_incident(
         reporter=reporter,
         report_time=datetime.now(),
         report_only=report_only,
+        private=private,
         summary=summary,
         impact=impact,
         lead=lead,
@@ -72,6 +74,7 @@ def edit_incident(
     impact = submission["impact"]
     lead_id = submission["lead"]
     severity = submission["severity"]
+    private = True if submission.get("private", False) else False
 
     lead = None
     if lead_id:
@@ -85,6 +88,10 @@ def edit_incident(
 
         if not severity and incident.severity:
             raise Exception("Cannot unset severity")
+
+        if private:
+            # making an incident private is irreversible
+            incident.private = private
 
         # deliberately update in this way the post_save signal gets sent
         # (required for the headline post to auto update)
