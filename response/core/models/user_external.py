@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.db import models
 
 
@@ -14,7 +14,7 @@ class ExternalUser(models.Model):
     class Meta:
         unique_together = ("owner", "app_id", "external_id")
 
-    owner = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True)
     app_id = models.CharField(max_length=50, blank=False, null=False)
     external_id = models.CharField(max_length=50, blank=False, null=False)
     display_name = models.CharField(max_length=50, blank=False, null=False)
