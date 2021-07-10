@@ -23,7 +23,7 @@ def remind_incident_lead(incident: Incident):
         comms_channel = CommsChannel.objects.get(incident=incident)
         if not incident.lead:
             comms_channel.post_in_channel(
-                "👩‍🚒 This incident hasn't got a lead. Please set one with `@incident lead ...`"
+                "👩‍🚒 This incident doesn't have a lead. Please set one with `@incident lead ...`"
             )
     except CommsChannel.DoesNotExist:
         pass
@@ -34,6 +34,10 @@ def remind_close_incident(incident: Incident):
 
     # Only remind on weekdays (weekday returns an ordinal indexed from 0 on Monday)
     if datetime.now().weekday() in (5, 6):
+        return
+
+    # Only remind during the day to prevent alerting people at unsociable hours
+    if datetime.now().hour not in range(9, 18):
         return
 
     try:

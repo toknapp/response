@@ -48,9 +48,9 @@ def slash_command(request):
         submit_label="Report",
         elements=[
             Text(
-                label="Report",
+                label="Title",
                 name="report",
-                placeholder="What's the tl;dr?",
+                placeholder="What's happened, in a sentence?",
                 value=report,
             )
         ],

@@ -166,13 +166,14 @@ class HeadlinePost(models.Model):
         )
 
 
-# Default/core actions to display on headline post. In order to allow inserting actions between these ones we increment the order by 100
+# Default/core actions to display on headline post.
+# In order to allow inserting actions between these ones we increment the order by 100
 
 
 @headline_post_action(order=100)
 def create_comms_channel_action(headline_post):
     if headline_post.incident.report_only:
-        # Reports don't have a comms channel
+        # Reports don't link to comms channels
         return None
     if headline_post.comms_channel:
         # No need to create an action, channel already exists

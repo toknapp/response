@@ -17,7 +17,7 @@ class CommsChannelManager(models.Manager):
         """
         Creates a comms channel in slack, and saves a reference to it in the DB
         """
-        time_string = datetime.now().strftime("%b-%e-%H-%M-%S")
+        time_string = datetime.now().strftime("%b-%-e-%H-%M-%S")
         name = f"inc-{time_string}".lower()
 
         try:
@@ -31,8 +31,8 @@ class CommsChannelManager(models.Manager):
         # If the channel already existed we will need to join it
         # If we are already in the channel as we created it, then this is a No-Op
         try:
-            logger.info(f"Joining channel {name}")
-            settings.SLACK_CLIENT.join_channel(name)
+            logger.info(f"Joining channel {name} {channel_id}")
+            settings.SLACK_CLIENT.join_channel(channel_id)
         except SlackError as e:
             logger.error(f"Failed to join comms channel {e}")
             raise
@@ -80,7 +80,7 @@ class CommsChannel(models.Model):
                 )
                 raise e
         else:
-            logger.info(f"Attempted to rename channel to nothing. No action take.")
+            logger.info("Attempted to rename channel to nothing. No action take.")
 
     def __str__(self):
         return self.incident.report

@@ -9,7 +9,7 @@ from response.slack.client import SlackError
 logger = logging.getLogger(__name__)
 
 
-def update_user_cache():
+def update_user_cache(exclude_bots=False):
     cursor = None
     while cursor != "":
         response = settings.SLACK_CLIENT.get_paginated_users(limit=200, cursor=cursor)
@@ -19,6 +19,8 @@ def update_user_cache():
         logger.info(f"Updating {len(users)} users in the cache")
         with transaction.atomic():
             for user in users:
+                if exclude_bots and user["is_bot"]:
+                    continue
                 ExternalUser.objects.update_or_create_slack(
                     external_id=user["id"],
                     defaults={
@@ -26,6 +28,7 @@ def update_user_cache():
                         or user["name"],
                         "full_name": user["profile"]["real_name"] or user["name"],
                         "email": user["profile"].get("email", None),
+                        "deleted": user["deleted"],
                     },
                 )
         cursor = response["response_metadata"].get("next_cursor")
@@ -49,6 +52,7 @@ def get_user_profile(external_id):
             "name": external_user.display_name,
             "fullname": external_user.full_name,
             "email": external_user.email,
+            "deleted": external_user.deleted,
         }
     except ExternalUser.DoesNotExist:
         # profile from slack
@@ -65,6 +69,7 @@ def get_user_profile(external_id):
                 "display_name": user_profile["name"],
                 "full_name": user_profile["fullname"],
                 "email": user_profile["email"],
+                "deleted": user_profile["deleted"],
             },
         )
 
@@ -79,7 +84,7 @@ def get_user_profile_by_email(email):
         - or else from the Slack API
     """
     if not email:
-        return None
+        raise SlackError("Can't fetch user without an email")
 
     try:
         external_user = ExternalUser.objects.get(email=email)
@@ -90,6 +95,7 @@ def get_user_profile_by_email(email):
             "name": external_user.display_name,
             "fullname": external_user.full_name,
             "email": external_user.email,
+            "deleted": external_user.deleted,
         }
     except ExternalUser.DoesNotExist:
         # profile from slack
@@ -108,6 +114,7 @@ def get_user_profile_by_email(email):
                 "display_name": user_profile["name"],
                 "full_name": user_profile["fullname"],
                 "email": user_profile["email"],
+                "deleted": user_profile["deleted"],
             },
         )
 

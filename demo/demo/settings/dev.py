@@ -9,10 +9,10 @@ if os.environ.get("POSTGRES"):
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "HOST": "db",
-            "PORT": "5432",
-            "USER": "postgres",
-            "NAME": "postgres",
+            "HOST": os.getenv("DB_HOST", "db"),
+            "PORT": os.getenv("DB_PORT", "5432"),
+            "USER": os.getenv("DB_USER", "postgres"),
+            "NAME": os.getenv("DB_NAME", "postgres"),
         }
     }
 
@@ -42,6 +42,7 @@ LOGGING = {
     },
 }
 
+RESPONSE_LOGIN_REQUIRED = False
 
 SLACK_TOKEN = get_env_var("SLACK_TOKEN")
 SLACK_SIGNING_SECRET = get_env_var("SLACK_SIGNING_SECRET")
